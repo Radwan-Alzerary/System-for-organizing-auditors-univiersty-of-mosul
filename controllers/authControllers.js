@@ -64,12 +64,12 @@ module.exports.cashirRegister = async (req, res, next) => {
 module.exports.register = async (req, res, next) => {
   try {
     console.log(req.body);
-    const { userName, email, password } = req.body;
+    const { userName, email, password,role } = req.body;
     const user = await User.create({
       email,
       password,
       userName,
-      role: "admin",
+      role,
     });
 
     const token = createToken(user._id);
@@ -122,6 +122,16 @@ module.exports.login = async (req, res) => {
     res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge * 1000 });
     res.status(200).json({ user: user._id, status: true });
   } catch (err) {
+    const errors = handleErrors(err);
+    res.json({ errors, status: false });
+  }
+};
+
+module.exports.getAll = async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
     const errors = handleErrors(err);
     res.json({ errors, status: false });
   }

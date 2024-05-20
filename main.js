@@ -2,14 +2,34 @@
 
 const express = require("express");
 const http = require("http");
-const socketIo = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "*",
+    credentials: true,
+    },
+});
 const path = require("path");
-
 const cors = require("cors");
+
+const corsOptions = {
+  origin: [
+    /^(http:\/\/.+:8080)$/,
+    /^(http:\/\/.+:8085)$/,
+    /^(http:\/\/.+:80)$/,
+    /^(http:\/\/.+:3000)$/,
+    /^(http:\/\/.+:5000)$/,
+    /^(http:\/\/.+:5001)$/,
+  ],
+  credentials: true,
+  "Access-Control-Allow-Credentials": true,
+};
+
+
+app.use(cors(corsOptions));
+
 const morgan = require("morgan");
 const compression = require("compression");
 app.use(compression());
@@ -34,19 +54,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(flash());
-const corsOptions = {
-  origin: [
-    /^(http:\/\/.+:8080)$/,
-    /^(http:\/\/.+:8085)$/,
-    /^(http:\/\/.+:80)$/,
-    /^(http:\/\/.+:3000)$/,
-    /^(http:\/\/.+:5000)$/,
-  ],
-  credentials: true,
-  "Access-Control-Allow-Credentials": true,
-};
-
-app.use(cors(corsOptions));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -65,7 +72,7 @@ const browserPromise = puppeteer.launch(); // Launch the browser once
 async function printImageAsync(imagePath, printincount) {
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: `tcp://192.168.1.87/:9100`,
+    interface: `tcp://172.20.82.17//:9100`,
     // characterSet: CharacterSet.SLOVENIA,
     removeSpecialCharacters: false,
     lineCharacter: "=",
@@ -218,9 +225,22 @@ io.on("connection", (socket) => {
       io.emit("book-received", "category"); // You can emit to a specific room if needed
     }
   });
+
+
+  socket.on("ubdate", async () => {
+    try {
+      io.emit("book-received", "category"); // You can emit to a specific room if needed
+    } catch (error) {
+      console.log(error);
+
+      io.emit("book-received", "category"); // You can emit to a specific room if needed
+    }
+  });
+
+
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

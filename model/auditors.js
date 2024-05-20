@@ -3,11 +3,13 @@ const AuditorsSchema = new mongoose.Schema(
   {
     name: { type: String },
     from:{type:String},
-    to:{type:String},
+    department:{type: mongoose.Schema.Types.ObjectId, ref: "Department"},
     state:{type:String},
     sequence:{type:Number,default:1},
-    expire :{type:Date}
-    
+    expire :{type:Date},
+    ExaminerProcedureDate:{type:Date},
+    Examinername:{type: mongoose.Schema.Types.ObjectId, ref: "Users"},
+    ExaminerFinish:{type:Boolean,default:false}
   },
   {
     timestamps: true,

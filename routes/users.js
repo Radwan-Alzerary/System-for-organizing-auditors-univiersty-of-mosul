@@ -4,7 +4,8 @@ const {
   cashirRegister,
   register,
   login,
-  editAcount
+  editAcount,
+  getAll
 } = require("../controllers/authControllers");
 const { checkUser } = require("../middlewares/authMiddleware");
 const User = require("../model/user");
@@ -28,6 +29,7 @@ router.post("/", checkUser);
 // router.post("/updatetoken", updateToken);
 router.post("/register", register);
 router.post("/edit", editAcount);
+router.get("/getAll", getAll);
 router.post("/addcashire", cashirRegister);
 router.post("/login", login);
 router.get("/checkAvailable", async (req, res, next) => {
