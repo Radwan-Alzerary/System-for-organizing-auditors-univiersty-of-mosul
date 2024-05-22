@@ -83,7 +83,7 @@ async function printImageAsync(imagePath, printincount) {
   });
   try {
     printer.alignCenter();
-    await printer.printImage(`./public/img/image.png`); // Print PNG image
+    // await printer.printImage(`./public/img/image.png`); // Print PNG image
     await printer.printImage(imagePath); // Print PNG image
     await printer.cut();
     for (i = 0; i < printincount; i++) {
