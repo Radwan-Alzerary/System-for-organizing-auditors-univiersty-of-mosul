@@ -5,7 +5,8 @@ const {
   register,
   login,
   editAcount,
-  getAll
+  getAll,
+  logout
 } = require("../controllers/authControllers");
 const { checkUser } = require("../middlewares/authMiddleware");
 const User = require("../model/user");
@@ -32,6 +33,8 @@ router.post("/edit", editAcount);
 router.get("/getAll", getAll);
 router.post("/addcashire", cashirRegister);
 router.post("/login", login);
+router.get('/logout', logout);
+
 router.get("/checkAvailable", async (req, res, next) => {
   try {
     const users = await User.countDocuments();

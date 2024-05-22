@@ -72,7 +72,7 @@ const browserPromise = puppeteer.launch(); // Launch the browser once
 async function printImageAsync(imagePath, printincount) {
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: `tcp://172.20.82.17//:9100`,
+    interface: `tcp://172.20.82.221//:9100`,
     // characterSet: CharacterSet.SLOVENIA,
     removeSpecialCharacters: false,
     lineCharacter: "=",

@@ -136,3 +136,7 @@ module.exports.getAll = async (req, res) => {
     res.json({ errors, status: false });
   }
 };
+module.exports.logout = async (req, res) => {
+  res.cookie("jwt", "", { maxAge: 1 });
+  res.status(200).json({ message: "Logged out successfully" });
+};

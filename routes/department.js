@@ -42,27 +42,50 @@ router.get("/", async (req, res) => {
 
 router.get("/departments-with-auditor-counts", async (req, res) => {
   try {
-    const departmentsWithCounts = await Department.aggregate([
+    const today = new Date();
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    const result = await Auditors.aggregate([
+      {
+        $group: {
+          _id: "$department",
+          count: { $sum: 1 },
+          countToday: { $sum: { $cond: [{ $gte: ["$createdAt", startOfDay] }, 1, 0] } },
+          countWeek: { $sum: { $cond: [{ $gte: ["$createdAt", startOfWeek] }, 1, 0] } },
+          countMonth: { $sum: { $cond: [{ $gte: ["$createdAt", startOfMonth] }, 1, 0] } },
+        }
+      },
       {
         $lookup: {
-          from: "auditors", // The name of the Auditors collection
+          from: "departments", // يجب أن يكون اسم المجموعة صحيحًا هنا
           localField: "_id",
-          foreignField: "to",
-          as: "auditors",
-        },
+          foreignField: "_id",
+          as: "department"
+        }
+      },
+      {
+        $unwind: "$department"
       },
       {
         $project: {
-          name: 1,
-          auditorCount: { $size: "$auditors" },
-        },
-      },
+          _id: 0,
+          departmentId: "$_id",
+          departmentName: "$department.name",
+          auditorsCount: "$count",
+          auditorsCountToday: "$countToday",
+          auditorsCountWeek: "$countWeek",
+          auditorsCountMonth: "$countMonth"
+        }
+      }
     ]);
 
-    res.status(200).json(departmentsWithCounts);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+
 });
 
 
@@ -87,7 +110,6 @@ router.put("/:id",upload.single("image"), async (req, res) => {
   if(req.file){
     const imagePath = req.file ? "/img/category/" + req.file.filename : null;
     bodyData.image = imagePath;
-  
   }
 
   try {
