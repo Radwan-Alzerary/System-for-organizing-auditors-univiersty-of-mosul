@@ -120,13 +120,30 @@ io.on("connection", (socket) => {
   });
   socket.on("new", async (data) => {
     try {
+
+
       const lastAuditor = await Auditors.findOne().sort({ createdAt: -1 });
       const data = {};
+    
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set the time part to midnight
+    
       if (lastAuditor) {
-        data.sequence = lastAuditor.sequence + 1;
+        const lastAuditorDate = new Date(lastAuditor.createdAt);
+        lastAuditorDate.setHours(0, 0, 0, 0); // Set the time part to midnight
+    
+        if (lastAuditorDate.getTime() === today.getTime()) {
+          data.sequence = lastAuditor.sequence + 1;
+        } else {
+          data.sequence = 1;
+        }
       } else {
         data.sequence = 1;
       }
+    
+    
+
+
       data.state = "انتضار";
       const category = new Auditors(data);
       await category.save();
