@@ -6,23 +6,26 @@
     <title>Document</title>
     <style>
       body {
-        background-color: black;
+        background-image: url('img/background.png'); /* Add the path to your background image */
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         overflow: hidden;
         margin: 0;
         padding: 0;
       }
-    
+
       .moving-text {
         position: absolute;
-        top: 30%;
+        top: 35%;
         left: 100%;
         transform: translate(-100%, -50%);
-        color: white;
+        color: black;
         font-size: 44px;
         white-space: nowrap;
         animation: moveText 20s linear infinite;
       }
-    
+
       @keyframes moveText {
         0% {
           left: -100%;
@@ -34,10 +37,9 @@
     </style>
   </head>
   <body style="padding: 0; margin: 0">
-    <div style="width: 100vw; height: 100vh; background-color: black ;display: flex;justify-items: center; justify-content: center; align-items: center;font-weight: bold;font-size: 6rem;">
+    <div style="width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 8rem;">
       <div class="moving-text">مرحبا بكم في كلية طب الاسنان نتمنى لكم افضل الاوقات</div>
-
-      <a id="lastPendingAuditor" style="color: white"></a>
+      <a id="lastPendingAuditor" style="color: black;font-weight: bold;font-size: 14rem;"></a>
     </div>
     <script src="js/socket.js"></script>
     <script src="js/axios.js"></script>
@@ -105,7 +107,6 @@
       function fetchLastAuditor() {
         // Implement logic to fetch last auditor
       }
-
     </script>
   </body>
 </html>

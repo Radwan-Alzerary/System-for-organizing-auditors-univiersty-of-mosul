@@ -72,7 +72,7 @@ const browserPromise = puppeteer.launch(); // Launch the browser once
 async function printImageAsync(imagePath, printincount) {
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: `tcp://172.20.82.221/:9100`,
+    interface: `tcp://192.30.30.20/:9100`,
     // characterSet: CharacterSet.SLOVENIA,
     removeSpecialCharacters: false,
     lineCharacter: "=",
@@ -96,14 +96,13 @@ async function printImageAsync(imagePath, printincount) {
 }
 
 // Update time every second
-setInterval(sendTime, 1000);
+setInterval(sendTime, 2000);
 
 // Listen for incoming connections
 io.on("connection", (socket) => {
   socket.on("add-user", (userId) => {
     onlineUsers.set(userId, socket.id);
   });
-
   socket.on("send-msg", (data) => {
     const sendUserSocket = onlineUsers.get(data.to);
     console.log(data);

@@ -17,7 +17,7 @@ async function printImageAsync(imagePath, printincount) {
 
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: `tcp://172.20.82.221/:9100`,
+    interface: `tcp://192.30.30.20/:9100`,
     // characterSet: CharacterSet.SLOVENIA,
     removeSpecialCharacters: false,
     lineCharacter: "=",
