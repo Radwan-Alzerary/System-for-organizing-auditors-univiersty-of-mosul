@@ -263,7 +263,10 @@ io.on("connection", (socket) => {
       <div>
         <a style="font-size: 2rem;">يرجى الانتضار لحين وصول الدور</a>
       </div>
-      
+            <div>
+        <a style="font-size: 1rem;">${data.addDate}</a>
+      </div>
+
       <hr style="width:50%; border-top: 1px dashed; margin-top: 10px;">
       
     </div>
