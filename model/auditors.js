@@ -9,7 +9,8 @@ const AuditorsSchema = new mongoose.Schema(
     expire :{type:Date},
     ExaminerProcedureDate:{type:Date},
     Examinername:{type: mongoose.Schema.Types.ObjectId, ref: "Users"},
-    ExaminerFinish:{type:Boolean,default:false}
+    ExaminerFinish:{type:Boolean,default:false},
+    addDate:{type:Date}
   },
   {
     timestamps: true,

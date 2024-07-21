@@ -9,7 +9,7 @@ const io = require("socket.io")(server, {
   cors: {
     origin: "*",
     credentials: true,
-    },
+  },
 });
 const path = require("path");
 const cors = require("cors");
@@ -26,7 +26,6 @@ const corsOptions = {
   credentials: true,
   "Access-Control-Allow-Credentials": true,
 };
-
 
 app.use(cors(corsOptions));
 
@@ -66,39 +65,57 @@ const sendTime = () => {
 };
 const puppeteer = require("puppeteer");
 const Auditors = require("./model/auditors");
+const SystemSetting = require("./model/systemSetting");
 
 const browserPromise = puppeteer.launch(); // Launch the browser once
+
+SystemSetting.countDocuments()
+  .then((count) => {
+    if (count === 0) {
+      const systemSetting = new SystemSetting({
+        name: "main",
+        screenImg: "img/background.png",
+      });
+      systemSetting
+        .save()
+        .then(() =>
+          console.log("Default MedicalReportsStype document created.")
+        )
+        .catch((err) =>
+          console.error("Error creating MedicalReportsStype document:", err)
+        );
+    }
+  })
+  .catch((err) =>
+    console.error("Error checking MedicalReportsStype collection:", err)
+  );
 
 async function printImageAsync(imagePath, printincount) {
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
-    interface: `tcp://192.30.30.20/:9100`,
-    // characterSet: CharacterSet.SLOVENIA,
+    interface: `tcp://192.168.8.201:9100`,
+    characterSet: CharacterSet.SLOVENIA,
     removeSpecialCharacters: false,
     lineCharacter: "=",
     breakLine: BreakLine.WORD,
     options: {
-      timeout: 4000,
+      timeout: 2000,
     },
   });
+
   try {
     printer.alignCenter();
-    // await printer.printImage(`./public/img/image.png`); // Print PNG image
+    await printer.printImage(`./public/img/image.png`); // Print PNG image
     await printer.printImage(imagePath); // Print PNG image
     await printer.cut();
-    for (i = 0; i < printincount; i++) {
-      await printer.execute();
-    }
+    await printer.execute();
+
     console.log("Image printed successfully.");
   } catch (error) {
     console.error("Error printing image:", error);
   }
 }
 
-// Update time every second
-setInterval(sendTime, 2000);
-
-// Listen for incoming connections
 io.on("connection", (socket) => {
   socket.on("add-user", (userId) => {
     onlineUsers.set(userId, socket.id);
@@ -118,33 +135,59 @@ io.on("connection", (socket) => {
     console.log(data);
     io.emit("book-received", "newPatient"); // You can emit to a specific room if needed
   });
-  socket.on("new", async (data) => {
+  socket.on("new", async (datax) => {
     try {
+      let date = new Date(datax.timestamp);
+      console.log(date);
+      let humanDate = date.toLocaleString(); // This will use the default locale and format
 
+      console.log(humanDate); // Output the human-readable date
 
-      const lastAuditor = await Auditors.findOne().sort({ createdAt: -1 });
       const data = {};
-    
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Set the time part to midnight
-    
+
+      const dateToFind = date; // Replace with the date you're looking for
+
+      const lastAuditor = await Auditors.findOne({
+        addDate: {
+          $gte: new Date(
+            dateToFind.getFullYear(),
+            dateToFind.getMonth(),
+            dateToFind.getDate()
+          ),
+          $lt: new Date(
+            dateToFind.getFullYear(),
+            dateToFind.getMonth(),
+            dateToFind.getDate() + 1
+          ),
+        },
+      }).sort({ addDate: -1 });
+
+      const lastAuditorx = await Auditors.find({
+        addDate: {
+          $gte: new Date(
+            dateToFind.getFullYear(),
+            dateToFind.getMonth(),
+            dateToFind.getDate()
+          ),
+          $lt: new Date(
+            dateToFind.getFullYear(),
+            dateToFind.getMonth(),
+            dateToFind.getDate() + 1
+          ),
+        },
+      }).sort({ addDate: -1 });
+
+      console.log(lastAuditorx);
       if (lastAuditor) {
-        const lastAuditorDate = new Date(lastAuditor.createdAt);
-        lastAuditorDate.setHours(0, 0, 0, 0); // Set the time part to midnight
-    
-        if (lastAuditorDate.getTime() === today.getTime()) {
-          data.sequence = lastAuditor.sequence + 1;
-        } else {
-          data.sequence = 1;
-        }
+        data.sequence = lastAuditor.sequence + 1;
       } else {
         data.sequence = 1;
       }
-    
-    
-
 
       data.state = "انتضار";
+      data.addDate = date;
+      console.log(data);
+
       const category = new Auditors(data);
       await category.save();
       const htmlContent = `<!DOCTYPE html>
@@ -199,18 +242,36 @@ io.on("connection", (socket) => {
           </style>
         </head>
       
-        <body>
-          <main>
-            <div  style="height:800px; margin-top: 60px;display: flex;justify-items: center;align-items: center;justify-content: center;">
-              <a style="font-size: 10rem;">${data.sequence}</a>
-            </div>
+<body>
+  <main>
+    <div style="height:400px; margin-top: 60px; display: flex; flex-direction: column; justify-items: center; align-items: center; justify-content: center;">
       
-            <div
-              class="centerdiv"
-              style="padding-top: 10px; text-align: center; font-size: 1.8rem"
-            ></div>
-          </main>
-        </body>
+      <hr style="width:50%; border-top: 1px dashed; margin-top: 0;">
+      
+      <div>
+        <a style="font-size: 2rem;">مرحبا بكم في كلية طب الاسنان</a>
+      </div>
+      
+      <hr style="width:430px; border-top: 5px dashed; margin-top: 10px;">
+      
+      <div>
+        <a style="font-size: 10rem;">${data.sequence}</a>
+      </div>
+      
+      <hr style="width:430px; border-top: 5px dashed; margin-top: 10px;">
+      
+      <div>
+        <a style="font-size: 2rem;">يرجى الانتضار لحين وصول الدور</a>
+      </div>
+      
+      <hr style="width:50%; border-top: 1px dashed; margin-top: 10px;">
+      
+    </div>
+    
+    <div class="centerdiv" style="padding-top: 10px; text-align: center; font-size: 1.8rem;"></div>
+    <hr style="width:50%; border-top: 1px dashed; margin-top: 0; margin-left: 0;">
+  </main>
+</body>
       </html>
       `;
 
@@ -242,7 +303,6 @@ io.on("connection", (socket) => {
     }
   });
 
-
   socket.on("ubdate", async () => {
     try {
       io.emit("book-received", "category"); // You can emit to a specific room if needed
@@ -252,8 +312,6 @@ io.on("connection", (socket) => {
       io.emit("book-received", "category"); // You can emit to a specific room if needed
     }
   });
-
-
 });
 
 const PORT = process.env.PORT || 5001;

@@ -47,7 +47,7 @@ router.get("/getall", async (req, res) => {
     const category = await Auditors.find()
       .populate("Examinername")
       .populate("department")
-      .sort({ createdAt: -1 })
+      .sort({ addDate: -1 })
       .limit(40);
 
     res.status(201).json(category);
@@ -77,7 +77,7 @@ router.get("/getall/:searchSequance", async (req, res) => {
 
 router.post("/new", async (req, res) => {
   try {
-    const lastAuditor = await Auditors.findOne().sort({ createdAt: -1 });
+    const lastAuditor = await Auditors.findOne().sort({ addDate: -1 });
     const data = req.body;
     if (lastAuditor) {
       data.sequence = lastAuditor.sequence + 1;
@@ -227,7 +227,7 @@ router.post("/addDepartmentToAuditors", async (req, res) => {
 router.post("/skip", async (req, res) => {
   try {
     const category = await Auditors.findOne({ ExaminerFinish: true })
-      .sort({ createdAt: -1 })
+      .sort({ addDate: -1 })
       .exec();
     category.state = "متخطى";
     category.ExaminerProcedureDate = new Date();
@@ -272,13 +272,13 @@ router.get("/analysis", async (req, res) => {
     thisMonthStart.setDate(1);
 
     const todayCount = await Auditors.countDocuments({
-      createdAt: { $gte: todayStart },
+      addDate: { $gte: todayStart },
     });
     const thisWeekCount = await Auditors.countDocuments({
-      createdAt: { $gte: thisWeekStart },
+      addDate: { $gte: thisWeekStart },
     });
     const thisMonthCount = await Auditors.countDocuments({
-      createdAt: { $gte: thisMonthStart },
+      addDate: { $gte: thisMonthStart },
     });
     const allTimeCount = await Auditors.countDocuments({});
     // Counts by state
@@ -343,7 +343,7 @@ router.delete("/delete/:id", async (req, res) => {
 
 router.get("/last-auditor", async (req, res) => {
   try {
-    const lastAuditor = await Auditors.findOne().sort({ createdAt: -1 }).exec();
+    const lastAuditor = await Auditors.findOne().sort({ addDate: -1 }).exec();
     res.json(lastAuditor);
   } catch (err) {
     console.error(err);
@@ -355,7 +355,7 @@ router.get("/last-auditor", async (req, res) => {
 router.get("/last-pending-auditor", async (req, res) => {
   try {
     const lastPendingAuditor = await Auditors.findOne({ ExaminerFinish: true })
-      .sort({ createdAt: -1 })
+      .sort({ addDate: -1 })
       .exec();
     res.json(lastPendingAuditor);
   } catch (err) {

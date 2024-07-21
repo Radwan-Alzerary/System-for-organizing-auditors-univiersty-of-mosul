@@ -17,7 +17,6 @@ const storage = multer.diskStorage({
 
 // Create multer instance for uploading image
 const upload = multer({ storage: storage });
-
 // Create a new category
 router.post("/", async (req, res) => {
   const bodyData = req.body;
@@ -29,7 +28,6 @@ router.post("/", async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
-
 // Get all categories
 router.get("/", async (req, res) => {
   try {
@@ -39,57 +37,101 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 router.get("/departments-with-auditor-counts", async (req, res) => {
   try {
     const today = new Date();
-    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const startOfWeek = new Date(
+      today.setDate(today.getDate() - today.getDay())
+    );
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    const result = await Auditors.aggregate([
-      {
-        $group: {
-          _id: "$department",
-          count: { $sum: 1 },
-          countToday: { $sum: { $cond: [{ $gte: ["$createdAt", startOfDay] }, 1, 0] } },
-          countWeek: { $sum: { $cond: [{ $gte: ["$createdAt", startOfWeek] }, 1, 0] } },
-          countMonth: { $sum: { $cond: [{ $gte: ["$createdAt", startOfMonth] }, 1, 0] } },
-        }
-      },
+    const result = await Department.aggregate([
       {
         $lookup: {
-          from: "departments", // يجب أن يكون اسم المجموعة صحيحًا هنا
+          from: "auditors",
           localField: "_id",
-          foreignField: "_id",
-          as: "department"
-        }
+          foreignField: "department",
+          as: "auditors",
+        },
       },
       {
-        $unwind: "$department"
+        $unwind: {
+          path: "$auditors",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          departmentName: { $first: "$name" },
+          auditorsCount: { $sum: { $cond: [{ $ifNull: ["$auditors._id", false] }, 1, 0] } },
+          auditorsCountToday: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ["$auditors._id", false] },
+                    { $gte: ["$auditors.addDate", startOfDay] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          auditorsCountWeek: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ["$auditors._id", false] },
+                    { $gte: ["$auditors.addDate", startOfWeek] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+          auditorsCountMonth: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $ifNull: ["$auditors._id", false] },
+                    { $gte: ["$auditors.addDate", startOfMonth] },
+                  ],
+                },
+                1,
+                0,
+              ],
+            },
+          },
+        },
       },
       {
         $project: {
           _id: 0,
           departmentId: "$_id",
-          departmentName: "$department.name",
-          auditorsCount: "$count",
-          auditorsCountToday: "$countToday",
-          auditorsCountWeek: "$countWeek",
-          auditorsCountMonth: "$countMonth"
-        }
-      }
+          departmentName: 1,
+          auditorsCount: 1,
+          auditorsCountToday: 1,
+          auditorsCountWeek: 1,
+          auditorsCountMonth: 1,
+        },
+      },
     ]);
-
+console.log(result)
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-
 });
-
-
-
 // Get a specific category by ID
 router.get("/:id", async (req, res) => {
   try {
@@ -103,11 +145,11 @@ router.get("/:id", async (req, res) => {
   }
 });
 // Update a category by ID
-router.put("/:id",upload.single("image"), async (req, res) => {
+router.put("/:id", upload.single("image"), async (req, res) => {
   const bodyData = req.body;
-  console.log(req.body)
-  console.log(req.file)
-  if(req.file){
+  console.log(req.body);
+  console.log(req.file);
+  if (req.file) {
     const imagePath = req.file ? "/img/category/" + req.file.filename : null;
     bodyData.image = imagePath;
   }
