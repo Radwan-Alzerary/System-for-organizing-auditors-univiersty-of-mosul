@@ -77,7 +77,7 @@
             "http://172.20.82.220:5001/auditos/last-pending-auditor"
           );
           if (response.data) {
-            setLastPendingAuditor(response.data.sequence+1 ?? 0);
+            setLastPendingAuditor(response.data.sequence ?? 0);
           }
         } catch (error) {
           setError(error);
@@ -86,7 +86,7 @@
       }
 
       function setLastPendingAuditor(value) {
-        document.getElementById("lastPendingAuditor").innerText = value;
+        document.getElementById("lastPendingAuditor").innerText = Number(value)+1;
       }
 
       function setError(error) {
