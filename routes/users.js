@@ -12,6 +12,7 @@ const { checkUser } = require("../middlewares/authMiddleware");
 const User = require("../model/user");
 const router = require("express").Router();
 const multer = require("multer");
+const authenticateToken = require("../middlewares/authenticateToken");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "./public/img");
@@ -29,13 +30,13 @@ const upload = multer({ storage: storage });
 router.post("/", checkUser);
 // router.post("/updatetoken", updateToken);
 router.post("/register", register);
-router.post("/edit", editAcount);
-router.get("/getAll", getAll);
-router.post("/addcashire", cashirRegister);
+router.post("/edit",authenticateToken, editAcount);
+router.get("/getAll",authenticateToken, getAll);
+router.post("/addcashire",authenticateToken, cashirRegister);
 router.post("/login", login);
 router.get('/logout', logout);
 
-router.get("/checkAvailable", async (req, res, next) => {
+router.get("/checkAvailable",authenticateToken, async (req, res, next) => {
   try {
     const users = await User.countDocuments();
     if (users > 0) {
@@ -50,7 +51,7 @@ router.get("/checkAvailable", async (req, res, next) => {
 
 module.exports = router;
 
-router.get("/allusers/", async (req, res, next) => {
+router.get("/allusers/",authenticateToken, async (req, res, next) => {
   try {
     const users = await User.find({ role: "cashir" });
     return res.json(users);
@@ -59,7 +60,7 @@ router.get("/allusers/", async (req, res, next) => {
   }
 });
 
-router.get("/allUsers/:id/name/:name?", async (req, res, next) => {
+router.get("/allUsers/:id/name/:name?",authenticateToken, async (req, res, next) => {
   try {
     const userName = req.params.name ? req.params.name : "";
     const users = await User.find({
@@ -73,7 +74,7 @@ router.get("/allUsers/:id/name/:name?", async (req, res, next) => {
 });
 
 // Get one doctor by ID
-router.get("/getone/:id", async (req, res) => {
+router.get("/getone/:id",authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -85,7 +86,7 @@ router.get("/getone/:id", async (req, res) => {
   }
 });
 
-router.post("/update/image", upload.single("image"), async (req, res, next) => {
+router.post("/update/image",authenticateToken, upload.single("image"), async (req, res, next) => {
   console.log(req.body);
   const { filename, path } = req.file;
   console.log(filename, path);
@@ -105,7 +106,7 @@ router.post("/update/image", upload.single("image"), async (req, res, next) => {
   }
 });
 
-router.post("/update/image", async (req, res) => {
+router.post("/update/image",authenticateToken, async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.body.id, req.body.data);
     if (!user) {

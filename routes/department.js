@@ -147,8 +147,6 @@ router.get("/:id", async (req, res) => {
 // Update a category by ID
 router.put("/:id", upload.single("image"), async (req, res) => {
   const bodyData = req.body;
-  console.log(req.body);
-  console.log(req.file);
   if (req.file) {
     const imagePath = req.file ? "/img/category/" + req.file.filename : null;
     bodyData.image = imagePath;

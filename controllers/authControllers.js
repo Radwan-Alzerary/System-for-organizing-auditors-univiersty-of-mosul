@@ -1,3 +1,4 @@
+const FinancialAccount = require("../model/financialAccount");
 const User = require("../model/user");
 const jwt = require("jsonwebtoken");
 
@@ -63,13 +64,17 @@ module.exports.cashirRegister = async (req, res, next) => {
 
 module.exports.register = async (req, res, next) => {
   try {
+    const financialAccount = new FinancialAccount();
+    await financialAccount.save();
     console.log(req.body);
-    const { userName, email, password,role } = req.body;
+    const { userName, email, password, role } = req.body;
+
     const user = await User.create({
       email,
       password,
       userName,
       role,
+      financialAccount: financialAccount._id,
     });
 
     const token = createToken(user._id);
@@ -118,9 +123,16 @@ module.exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.login(email, password);
+    if (!user.financialAccount) {
+      const newFinancialAccount = new financialAccount();
+      await newFinancialAccount.save();
+      user.financialAccount = newFinancialAccount.id;
+      await user.save();
+    }
+
     const token = createToken(user._id);
     res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge * 1000 });
-    res.status(200).json({ user: user._id, status: true });
+    res.status(200).json({ user: user._id, status: true ,token});
   } catch (err) {
     const errors = handleErrors(err);
     res.json({ errors, status: false });

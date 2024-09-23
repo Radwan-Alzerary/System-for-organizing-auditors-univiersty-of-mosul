@@ -20,7 +20,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "UserName is Required"],
   },
-  
+  financialAccount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "FinancialAccount",
+  },
 });
 
 userSchema.pre("save", async function (next) {
