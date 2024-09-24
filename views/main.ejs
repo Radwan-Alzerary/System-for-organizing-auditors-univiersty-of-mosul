@@ -6,7 +6,7 @@
     <title>Document</title>
     <style>
       body {
-        background-image: url("img/background.png"); /* Add the path to your background image */
+        background-image: url(<%=systemScreen.backgroundImg%>); /* Add the path to your background image */
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -86,7 +86,7 @@
       }
 
       function setLastPendingAuditor(value) {
-        document.getElementById("lastPendingAuditor").innerText = Number(value)+1;
+        document.getElementById("lastPendingAuditor").innerText = Number(value);
       }
 
       function setError(error) {

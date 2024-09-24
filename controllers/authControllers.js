@@ -64,7 +64,7 @@ module.exports.cashirRegister = async (req, res, next) => {
 module.exports.register = async (req, res, next) => {
   try {
     console.log(req.body);
-    const { userName, email, password,role } = req.body;
+    const { userName, email, password, role } = req.body;
     const user = await User.create({
       email,
       password,
@@ -124,6 +124,34 @@ module.exports.login = async (req, res) => {
   } catch (err) {
     const errors = handleErrors(err);
     res.json({ errors, status: false });
+  }
+};
+module.exports.getOne = async (req, res) => {
+  try {
+    const updatedCategory = await User.findById(
+      req.params.id
+    );
+    if (!updatedCategory) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    res.json(updatedCategory);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports.editOne = async (req, res) => {
+  try {
+    console.log(req.body)
+    const category = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+    res.json(category);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 

@@ -1,8 +1,10 @@
-const router = require('express').Router();
+const MainScreenView = require("../model/mainScreenView");
 
-router.get('/', async (req, res) => {
-  res.render("main")
-})
+const router = require("express").Router();
 
+router.get("/", async (req, res) => {
+  const systemScreen = await MainScreenView.findOne();
+  res.render("them3",{systemScreen});
+});
 
 module.exports = router;

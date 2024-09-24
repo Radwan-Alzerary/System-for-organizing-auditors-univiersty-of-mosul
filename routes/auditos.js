@@ -11,9 +11,7 @@ const puppeteer = require("puppeteer");
 
 const browserPromise = puppeteer.launch(); // Launch the browser once
 
-const Setting = require("../model/pagesetting");
 async function printImageAsync(imagePath, printincount) {
-  const setting = await Setting.findOne();
 
   const printer = new ThermalPrinter({
     type: PrinterTypes.EPSON,
@@ -262,27 +260,45 @@ router.get("/cancele", async (req, res) => {
 
 router.get("/analysis", async (req, res) => {
   try {
-    const todayStart = new Date();
+    // Get the date from the client (e.g., from query parameters)
+    // Get the date from query parameters
+    const clientDateParam = req.query.date;
+
+    // Parse the date from milliseconds
+    const clientDate = clientDateParam ? new Date(parseInt(clientDateParam)) : new Date();
+    
+    if (isNaN(clientDate.getTime())) {
+      return res.status(400).json({ error: "Invalid date provided" });
+    }
+
+    // Start of today based on client date
+    const todayStart = new Date(clientDate);
     todayStart.setHours(0, 0, 0, 0);
 
-    const thisWeekStart = new Date();
-    thisWeekStart.setDate(thisWeekStart.getDate() - thisWeekStart.getDay());
+    // Start of the week based on client date (assuming week starts on Sunday)
+    const thisWeekStart = new Date(todayStart);
+    thisWeekStart.setDate(todayStart.getDate() - todayStart.getDay());
 
-    const thisMonthStart = new Date();
-    thisMonthStart.setDate(1);
+    // Start of the month based on client date
+    const thisMonthStart = new Date(clientDate.getFullYear(), clientDate.getMonth(), 1);
 
+    // Fetch counts
     const todayCount = await Auditors.countDocuments({
       addDate: { $gte: todayStart },
     });
+
     const thisWeekCount = await Auditors.countDocuments({
       addDate: { $gte: thisWeekStart },
     });
+
     const thisMonthCount = await Auditors.countDocuments({
       addDate: { $gte: thisMonthStart },
     });
+
     const allTimeCount = await Auditors.countDocuments({});
-    // Counts by state
-    const awaitingCount = await Auditors.countDocuments({ state: "انتضار" });
+
+    // Counts by state (ensure the state strings match exactly what's in your database)
+    const awaitingCount = await Auditors.countDocuments({ state: "انتظار" });
     const completedCount = await Auditors.countDocuments({ state: "مكتمل" });
     const cancelledCount = await Auditors.countDocuments({ state: "ملغى" });
 
@@ -300,6 +316,70 @@ router.get("/analysis", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Endpoint to get monthly activity data
+router.get('/chart-data', async (req, res) => {
+  try {
+    const data = await Auditors.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m", date: "$addDate" } // Group by year and month
+          },
+          count: { $sum: 1 } // Count entries
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date ascending
+      }
+    ]);
+
+    // Transform data to match the chart structure
+    const responseData = data.map(item => ({
+      month: item._id,
+      value: item.count
+    }));
+
+    res.json(responseData);
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+// Endpoint to get activity data from Auditors
+router.get('/activity', async (req, res) => {
+  try {
+    // Assuming you're grouping by day
+    const activityData = await Auditors.aggregate([
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$addDate" } // Group by day
+          },
+          visits: { $sum: 1 } // Count of visits
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date ascending
+      }
+    ]);
+
+    // Transform the data to match the chart structure
+    const responseData = activityData.map(item => ({
+      visitDate: item._id,
+      visits: item.visits
+    }));
+
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error fetching activity data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Get one category by ID
 router.get("/getone/:id", async (req, res) => {
   try {

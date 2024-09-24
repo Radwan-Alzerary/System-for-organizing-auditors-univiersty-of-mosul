@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const SystemSettingSchema = new mongoose.Schema(
   {
     name: { type: String },
+    screenImg: { type: String, default: "img/background.png", require },
+
     screenAdv: [
       {
         text: { type: String },
@@ -13,7 +15,6 @@ const SystemSettingSchema = new mongoose.Schema(
         y: { type: Number },
       },
     ],
-    screenImg: { type: "String" },
   },
   {
     timestamps: true,

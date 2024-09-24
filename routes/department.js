@@ -40,14 +40,17 @@ router.get("/", async (req, res) => {
 router.get("/departments-with-auditor-counts", async (req, res) => {
   try {
     const today = new Date();
-    const startOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-    const startOfWeek = new Date(
-      today.setDate(today.getDate() - today.getDay())
-    );
+
+    // Start of today
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    // Start of the week (Sunday)
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // Start of the month
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
     const result = await Department.aggregate([
@@ -69,7 +72,15 @@ router.get("/departments-with-auditor-counts", async (req, res) => {
         $group: {
           _id: "$_id",
           departmentName: { $first: "$name" },
-          auditorsCount: { $sum: { $cond: [{ $ifNull: ["$auditors._id", false] }, 1, 0] } },
+          auditorsCount: {
+            $sum: {
+              $cond: [
+                { $ifNull: ["$auditors._id", false] },
+                1,
+                0,
+              ],
+            },
+          },
           auditorsCountToday: {
             $sum: {
               $cond: [
@@ -126,7 +137,8 @@ router.get("/departments-with-auditor-counts", async (req, res) => {
         },
       },
     ]);
-console.log(result)
+
+    console.log(result);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });

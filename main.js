@@ -19,6 +19,7 @@ const corsOptions = {
     /^(http:\/\/.+:8080)$/,
     /^(http:\/\/.+:8085)$/,
     /^(http:\/\/.+:80)$/,
+    /^(http:\/\/.+:3001)$/,
     /^(http:\/\/.+:3000)$/,
     /^(http:\/\/.+:5000)$/,
     /^(http:\/\/.+:5001)$/,
@@ -66,16 +67,14 @@ const sendTime = () => {
 const puppeteer = require("puppeteer");
 const Auditors = require("./model/auditors");
 const SystemSetting = require("./model/systemSetting");
+const MainScreenView = require("./model/mainScreenView");
 
 const browserPromise = puppeteer.launch(); // Launch the browser once
 
-SystemSetting.countDocuments()
+MainScreenView.countDocuments()
   .then((count) => {
     if (count === 0) {
-      const systemSetting = new SystemSetting({
-        name: "main",
-        screenImg: "img/background.png",
-      });
+      const systemSetting = new MainScreenView();
       systemSetting
         .save()
         .then(() =>
@@ -139,6 +138,7 @@ io.on("connection", (socket) => {
     try {
       let date = new Date(datax.timestamp);
       console.log(date);
+      console.log(datax.timestamp);
       let humanDate = date.toLocaleString(); // This will use the default locale and format
 
       console.log(humanDate); // Output the human-readable date

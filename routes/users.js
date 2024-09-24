@@ -6,7 +6,9 @@ const {
   login,
   editAcount,
   getAll,
-  logout
+  logout,
+  getOne,
+  editOne
 } = require("../controllers/authControllers");
 const { checkUser } = require("../middlewares/authMiddleware");
 const User = require("../model/user");
@@ -34,6 +36,8 @@ router.get("/getAll", getAll);
 router.post("/addcashire", cashirRegister);
 router.post("/login", login);
 router.get('/logout', logout);
+router.get('/:id', getOne);
+router.put('/:id', editOne);
 
 router.get("/checkAvailable", async (req, res, next) => {
   try {

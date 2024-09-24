@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const SettingSchema = new mongoose.Schema(
+const mainScreenViewSchema = new mongoose.Schema(
   {
     textRandom: [
       {
@@ -11,17 +11,17 @@ const SettingSchema = new mongoose.Schema(
       },
     ],
     visitNumberText: {
-      color: { type: String },
-      size: { type: String },
+      color: { type: String ,default:"#fff"},
+      size: { type: Number ,default:17},
       x: { type: Number, default: 50 },
       y: { type: Number, default: 50 },
     },
-    backgroundImage: { type: String,default: "img/background.png" },
+    backgroundImg: { type: String,default: "img/background.png"  },
   },
   {
     timestamps: true,
   }
 );
-const Setting = mongoose.model("Setting", SettingSchema);
+const MainScreenView = mongoose.model("MainScreenView", mainScreenViewSchema);
 
-module.exports = Setting;
+module.exports = MainScreenView;
