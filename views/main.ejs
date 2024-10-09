@@ -74,7 +74,7 @@
       async function fetchLastPendingAuditor() {
         try {
           const response = await axios.get(
-            "http://172.20.82.220:5001/auditos/last-pending-auditor"
+            "http://192.168.82.220:5001/auditos/last-pending-auditor"
           );
           if (response.data) {
             setLastPendingAuditor(response.data.sequence ?? 0);
