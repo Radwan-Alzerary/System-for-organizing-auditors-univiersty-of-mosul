@@ -9,3 +9,4 @@ router.delete('/:id', themeController.deleteTheme);
 
 module.exports = router;
 
+ 
